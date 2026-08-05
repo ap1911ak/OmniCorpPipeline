@@ -1,0 +1,7 @@
+pandas
+numpy
+prefect
+pytest
+jupyterlab
+psycopg2-binary
+sqlalchemy
