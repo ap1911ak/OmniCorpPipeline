@@ -1,6 +1,6 @@
-pandas
+pandas==2.2.2
 numpy
-prefect
+prefect==3.0.0
 pytest
 jupyterlab
 psycopg2-binary
