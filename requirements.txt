@@ -6,5 +6,4 @@ jupyterlab
 psycopg2-binary
 sqlalchemy
 duckdb
-prefect>=3.0.0
 pydantic>=2.0.0

@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # คัดลอกและติดตั้ง Python Libraries
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install prefect
+
 
 # คัดลอกซอร์สโค้ดในโปรเจกต์
 COPY . .
