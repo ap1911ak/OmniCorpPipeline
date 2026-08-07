@@ -1,22 +1,31 @@
 version: '3.8'
 
 services:
-  # บริการสำหรับ Python, Jupyter Notebook, Prefect, Pytest
   app:
     build: .
     container_name: python_dev_app
     ports:
       - "8888:8888"   # Jupyter Lab
-      - "4200:4200"   # Prefect Dashboard (กรณีสั่งเปิด prefect server)
     volumes:
-      - .:/app        # Mount โค้ดในเครื่องเข้า Container ให้แก้แล้วอัปเดตทันที
+      - .:/app
     environment:
       - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb
-      - PREFECT_API_URL=http://127.0.0.1:4200/api
+      - PREFECT_API_URL=http://prefect-server:4200/api
     depends_on:
       - db
+      - prefect-server
 
-  # บริการฐานข้อมูล PostgreSQL
+  prefect-server:
+    # ใช้ Official Image Prefect v3 ล่าสุดที่แก้บั๊ก Pydantic v2 แล้ว
+    image: prefecthq/prefect:3-latest
+    container_name: prefect_server
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "127.0.0.1:4200:4200"
+    environment:
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+      - PREFECT_UI_API_URL=http://localhost:4200/api
+
   db:
     image: postgres:15-alpine
     container_name: postgres_db
