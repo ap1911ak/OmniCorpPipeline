@@ -20,7 +20,7 @@ COPY . .
 
 # เปิด พอร์ตสำหรับ Jupyter Notebook
 EXPOSE 8888
-EXPOSE 4200
+
 
 # คำสั่งเปิดใช้งาน Jupyter Lab โดยไม่ถาม รหัสผ่าน (สำหรับ Local Development)
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''"]

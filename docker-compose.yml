@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build: .
@@ -16,7 +14,6 @@ services:
       - prefect-server
 
   prefect-server:
-    # ใช้ Official Image Prefect v3 ล่าสุดที่แก้บั๊ก Pydantic v2 แล้ว
     image: prefecthq/prefect:3-latest
     container_name: prefect_server
     command: prefect server start --host 0.0.0.0
@@ -39,5 +36,82 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
+    restart: unless-stopped
+    ports:
+      - "8978:8978"   # CloudBeaver Web UI
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    depends_on:
+      - db
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # Metabase Web UI
+    environment:
+      # ตั้งค่าให้ Metabase เก็บข้อมูลระบบลงใน Postgres 
+      - MB_DB_TYPE=postgres
+      - MB_DB_HOST=db
+      - MB_DB_PORT=5432
+      - MB_DB_DBNAME=mydb
+      - MB_DB_USER=myuser
+      - MB_DB_PASS=mypassword
+    depends_on:
+      - db
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-server
+    environment:
+      - CLICKHOUSE_DB=omni-db
+      - CLICKHOUSE_USER=myuser
+      - CLICKHOUSE_PASSWORD=mypassword
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ports:
+      - "8123:8123" # HTTP Interface
+      - "9000:9000" # Native Client Interface
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
+
+  vquery_backend:
+    image: vquery/backend:latest
+    container_name: vquery-service
+    pull_policy: never
+    command: /bin/sh -c "sleep 9999"
+    ports:
+      - "6001:6001"
+    environment:
+      - DB_TYPE=clickhouse
+      - DB_HOST=clickhouse
+      - DB_PORT=8123
+      - DB_NAME=omni-db
+      - DB_USER=myuser
+      - DB_PASSWORD=mypassword
+      - CACHE_ENABLE=false
+    depends_on:
+      - clickhouse            
+
+  vquery_frontend:
+    image: service-vquery-frontend:1
+    platform: linux/amd64
+    container_name: vquery-frontend
+    pull_policy: never
+    command: tail -f /dev/null
+    ports:
+      - "6000:8888"
+
 volumes:
   postgres_data:
+  cloudbeaver_data:
+  clickhouse_data:
+  clickhouse_logs:
