@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/app
     environment:
-      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb
+      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/omni-db
       - PREFECT_API_URL=http://prefect-server:4200/api
     depends_on:
       - db
@@ -30,7 +30,7 @@ services:
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_DB: omni-db
     ports:
       - "5432:5432"
     volumes:
@@ -58,7 +58,7 @@ services:
       - MB_DB_TYPE=postgres
       - MB_DB_HOST=db
       - MB_DB_PORT=5432
-      - MB_DB_DBNAME=mydb
+      - MB_DB_DBNAME=omni-db
       - MB_DB_USER=myuser
       - MB_DB_PASS=mypassword
     depends_on:
@@ -67,6 +67,7 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     container_name: clickhouse-server
+    restart: always
     environment:
       - CLICKHOUSE_DB=omni-db
       - CLICKHOUSE_USER=myuser

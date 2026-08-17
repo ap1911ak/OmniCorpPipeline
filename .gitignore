@@ -5,4 +5,7 @@ src/schema.txt
 src/__pycache__/
 data/
 src/.ipynb_checkpoints
+src/backup_deployment.log
+src/etl_deployment.log
 .venv/
+.venv-1/

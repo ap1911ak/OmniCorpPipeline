@@ -1,0 +1,28 @@
+Your flow 'Metabase Restore Flow' is being served and polling for scheduled runs!
+
+To trigger a run for this flow, use the following command:
+
+        $ prefect deployment run 'Metabase Restore Flow/Restore-Metabase-Dashboard'
+
+You can also run your flow via the Prefect UI: http://127.0.0.1:4200/deployments/deployment/820b4d2b-7e6a-4d15-9eee-949bac170a2d
+
+13:25:22.114 | WARNING | prefect.events.clients - Your Prefect server is running an older version of Prefect than your client which may result in unexpected behavior. Please upgrade your Prefect server from version 3.8.2 to version 3.8.3 or higher.
+13:25:32.942 | WARNING | prefect.client - Your Prefect server is running an older version of Prefect than your client which may result in unexpected behavior. Please upgrade your Prefect server from version 3.8.2 to version 3.8.3 or higher.
+13:25:33.058 | WARNING | prefect.events.clients - Your Prefect server is running an older version of Prefect than your client which may result in unexpected behavior. Please upgrade your Prefect server from version 3.8.2 to version 3.8.3 or higher.
+13:25:33.151 | INFO    | Flow run 'likable-tiger' - Beginning flow run 'likable-tiger' for flow 'Metabase Restore Flow'
+13:25:33.153 | INFO    | Flow run 'likable-tiger' - View at http://127.0.0.1:4200/runs/flow-run/78031670-66a9-4c85-922c-a120dc10e9aa
+ Container metabase_app Stopping 
+ Container metabase_app Stopped 
+13:25:36.340 | INFO    | Task run 'stop_container-f8e' - Finished in state Completed()
+13:25:36.480 | INFO    | Task run 'copy_backup_to_container-076' - Finished in state Completed()
+13:25:38.476 | INFO    | Task run 'restore_database-ab4' - Finished in state Completed()
+ Container metabase_app Starting 
+ Container metabase_app Started 
+13:25:38.825 | INFO    | Task run 'start_container-315' - Finished in state Completed()
+13:25:39.334 | INFO    | Flow run 'likable-tiger' - Finished in state Completed()
+Stopping metabase...
+Copying /Users/phormchai/Public/OmniCorpPipeline/data/backups/backup_omni-db_20260817_110559.dump to postgres_db...
+Copy successful!
+Starting restore process...
+Restore successful!
+Starting metabase...

@@ -1,7 +1,7 @@
 requests
 pandas==2.2.2
 numpy
-prefect==3.0.0
+prefect==3.8.3 
 pytest
 jupyterlab
 psycopg2-binary
