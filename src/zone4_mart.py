@@ -38,10 +38,6 @@ def load_to_clickhouse(table_name: str, df: pd.DataFrame):
     
     logger.info(f"🛠 Preparing table `{table_name}` schema...")
     
-    # หมายเหตุ: หากมีการปรับเปลี่ยน Schema (เพิ่ม/ลดคอลัมน์) คุณอาจจะต้อง Drop ตารางเก่าทิ้ง 1 ครั้ง
-    # เพื่อให้ ClickHouse สร้างตารางใหม่ด้วยโครงสร้างล่าสุด หากรันแล้วเจอ Error "Column not found" 
-    # ให้เอาคอมเมนต์บรรทัดล่างนี้ออกเพื่อล้างของเก่า 1 ครั้ง แล้วค่อยคอมเมนต์กลับครับ
-    #client.command(f"DROP TABLE IF EXISTS `{table_name}`")
     
     client.command(DDL_STATEMENTS[table_name])
     

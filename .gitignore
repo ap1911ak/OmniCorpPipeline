@@ -9,3 +9,4 @@ src/backup_deployment.log
 src/etl_deployment.log
 .venv/
 .venv-1/
+.env

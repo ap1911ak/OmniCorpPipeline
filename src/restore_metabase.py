@@ -1,13 +1,28 @@
 from prefect import flow, task
 import subprocess
 import os
+import glob
 
 # 1. หาตำแหน่ง Absolute Path ของโฟลเดอร์โปรเจกต์ (ถอยหลังกลับไป 1 ชั้นจากโฟลเดอร์ src)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 2. นำมาต่อกับ Path ของไฟล์ Backup
-BACKUP_FILE = os.path.join(BASE_DIR, "data", "backups", "backup_omni-db_20260817_110559.dump")
+BACKUP_DIR = os.path.join(BASE_DIR, "data", "backups")
 
+# 2. ค้นหาไฟล์ทั้งหมดที่ลงท้ายด้วย .dump ในโฟลเดอร์นั้น
+# (ใช้ glob.glob ช่วยกรองนามสกุลไฟล์ได้แม่นยำ)
+dump_files = glob.glob(os.path.join(BACKUP_DIR, "*.dump"))
+
+if dump_files:
+    # 3. หาไฟล์ล่าสุดโดยเทียบจากเวลาแก้ไข (Modification Time)
+    BACKUP_FILE = max(dump_files, key=os.path.getmtime)
+    print(f"พบไฟล์สำรองล่าสุด: {BACKUP_FILE}")
+else:
+    # 4. เผื่อกรณีไม่มีไฟล์ในโฟลเดอร์เลย
+    BACKUP_FILE = None
+    print("แจ้งเตือน: ไม่พบไฟล์สำรอง (.dump) ในโฟลเดอร์")
+
+    
 DB_CONTAINER = "postgres_db"
 SERVICE_NAME = "metabase"
 

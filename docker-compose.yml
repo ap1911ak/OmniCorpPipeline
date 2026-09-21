@@ -58,9 +58,10 @@ services:
       - MB_DB_TYPE=postgres
       - MB_DB_HOST=db
       - MB_DB_PORT=5432
-      - MB_DB_DBNAME=omni-db
-      - MB_DB_USER=myuser
-      - MB_DB_PASS=mypassword
+      - MB_DB_DBNAME={DB_NAME}
+      - MB_DB_USER={DB_USER}
+      - MB_DB_PASS={DB_PASSWORD}
+      - JAVA_OPTS=-Xmx512m
     depends_on:
       - db
 
@@ -69,10 +70,12 @@ services:
     container_name: clickhouse-server
     restart: always
     environment:
-      - CLICKHOUSE_DB=omni-db
-      - CLICKHOUSE_USER=myuser
-      - CLICKHOUSE_PASSWORD=mypassword
+      - CLICKHOUSE_DB={DB_NAME}
+      - CLICKHOUSE_USER={DB_USER}
+      - CLICKHOUSE_PASSWORD={DB_PASSWORD}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_DEFAULT_MAX_THREADS=1 
+      - CLICKHOUSE_DEFAULT_MAX_MEMORY_USAGE=536870912 # 512MB
     ports:
       - "8123:8123" # HTTP Interface
       - "9000:9000" # Native Client Interface
@@ -95,9 +98,9 @@ services:
       - DB_TYPE=clickhouse
       - DB_HOST=clickhouse
       - DB_PORT=8123
-      - DB_NAME=omni-db
-      - DB_USER=myuser
-      - DB_PASSWORD=mypassword
+      - DB_NAME={DB_NAME}
+      - DB_USER={DB_USER}
+      - DB_PASSWORD={DB_PASSWORD}
       - CACHE_ENABLE=false
     depends_on:
       - clickhouse            
