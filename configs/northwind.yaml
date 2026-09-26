@@ -1,0 +1,86 @@
+approval:
+  status: approved
+  version: omnicorp-star-v1
+  dbml: ../schemas/omnicorp.dbml
+source:
+  name: northwind
+  format: sqlite
+  uri: data/raw/northwind.db
+tables:
+  - {table: Customers, alias: customers}
+  - {table: Employees, alias: employees}
+  - {table: Products, alias: products}
+  - {table: Categories, alias: categories}
+  - {table: Orders, alias: orders}
+  - {table: "Order Details", alias: order_details}
+targets:
+  - name: dim_date
+    kind: dimension
+    query: |
+      SELECT DISTINCT CAST(strftime(CAST(order_date AS DATE), '%Y%m%d') AS BIGINT) AS date_key
+      FROM orders WHERE order_date IS NOT NULL
+    natural_key: [date_key]
+    key_column: date_key
+    required: [date_key, full_date, day_of_month, day_of_week, month, month_name, quarter, year]
+  - name: dim_source_system
+    kind: dimension
+    query: |
+      SELECT 2 AS source_system_id, 'Northwind' AS source_system_name,
+             'Wholesale goods distributor' AS description FROM orders LIMIT 1
+    natural_key: [source_system_id]
+    key_column: source_system_key
+    required: [source_system_id, source_system_name]
+  - name: dim_customers
+    kind: dimension
+    query: |
+      SELECT CAST(customer_id AS VARCHAR) AS source_customer_id,
+             company_name AS customer_name, 'organization' AS customer_type,
+             city, country FROM customers
+    natural_key: [source_customer_id]
+    key_column: customer_key
+    required: [source_customer_id, customer_name]
+  - name: dim_employees
+    kind: dimension
+    query: |
+      SELECT CAST(employee_id AS VARCHAR) AS source_employee_id,
+             first_name, last_name, title,
+             'order_employee' AS employee_role FROM employees
+    natural_key: [source_employee_id]
+    key_column: employee_key
+    required: [source_employee_id, first_name, last_name]
+  - name: dim_products
+    kind: dimension
+    query: |
+      SELECT CAST(p.product_id AS VARCHAR) AS source_product_id,
+             p.product_name, 'Wholesale Goods' AS product_domain,
+             c.category_name
+      FROM products p JOIN categories c ON p.category_id = c.category_id
+    natural_key: [source_product_id]
+    key_column: product_key
+    required: [source_product_id, product_name, product_domain, category_name]
+  - name: fact_sales_line
+    kind: fact
+    query: |
+      SELECT CAST(strftime(CAST(o.order_date AS DATE), '%Y%m%d') AS BIGINT) AS date_key,
+             CAST(o.customer_id AS VARCHAR) AS source_customer_id,
+             CAST(o.employee_id AS VARCHAR) AS source_employee_id,
+             CAST(d.product_id AS VARCHAR) AS source_product_id,
+             2 AS source_system_id,
+             CAST(o.order_id AS VARCHAR) AS source_order_id,
+             CAST(o.order_id AS VARCHAR) || ':' || CAST(d.product_id AS VARCHAR) AS source_line_id,
+             CAST(d.unit_price AS DOUBLE) AS unit_price,
+             CAST(d.quantity AS BIGINT) AS quantity,
+             CAST(d.discount AS DOUBLE) AS discount_rate,
+             CAST(d.unit_price * d.quantity * (1.0 - d.discount) AS DOUBLE) AS sales_amount
+      FROM order_details d JOIN orders o ON d.order_id = o.order_id
+      WHERE o.order_date IS NOT NULL
+    natural_key: [source_line_id]
+    key_column: sales_key
+    date_column: date_key
+    required: [date_key, customer_key, employee_key, product_key, source_system_key, source_line_id, unit_price, quantity, discount_rate, sales_amount]
+    foreign_keys:
+      customer_key: {dimension: dim_customers, fact_columns: [source_customer_id], dimension_columns: [source_customer_id]}
+      employee_key: {dimension: dim_employees, fact_columns: [source_employee_id], dimension_columns: [source_employee_id]}
+      product_key: {dimension: dim_products, fact_columns: [source_product_id], dimension_columns: [source_product_id]}
+      source_system_key: {dimension: dim_source_system, fact_columns: [source_system_id], dimension_columns: [source_system_id]}
+      date_key: {dimension: dim_date, fact_columns: [date_key], dimension_columns: [date_key]}

@@ -1,0 +1,86 @@
+approval:
+  status: approved
+  version: omnicorp-star-v1
+  dbml: ../schemas/omnicorp.dbml
+source:
+  name: chinook
+  format: sqlite
+  uri: data/raw/chinook.db
+tables:
+  - {table: Customer, alias: customer}
+  - {table: Employee, alias: employee}
+  - {table: Track, alias: track}
+  - {table: Genre, alias: genre}
+  - {table: Invoice, alias: invoice}
+  - {table: InvoiceLine, alias: invoice_line}
+targets:
+  - name: dim_date
+    kind: dimension
+    query: |
+      SELECT DISTINCT CAST(strftime(CAST(invoice_date AS DATE), '%Y%m%d') AS BIGINT) AS date_key
+      FROM invoice WHERE invoice_date IS NOT NULL
+    natural_key: [date_key]
+    key_column: date_key
+    required: [date_key, full_date, day_of_month, day_of_week, month, month_name, quarter, year]
+  - name: dim_source_system
+    kind: dimension
+    query: |
+      SELECT 1 AS source_system_id, 'Chinook' AS source_system_name,
+             'Digital media store' AS description FROM invoice LIMIT 1
+    natural_key: [source_system_id]
+    key_column: source_system_key
+    required: [source_system_id, source_system_name]
+  - name: dim_customers
+    kind: dimension
+    query: |
+      SELECT CAST(customer_id AS VARCHAR) AS source_customer_id,
+             trim(first_name || ' ' || last_name) AS customer_name,
+             'person' AS customer_type, city, country FROM customer
+    natural_key: [source_customer_id]
+    key_column: customer_key
+    required: [source_customer_id, customer_name]
+  - name: dim_employees
+    kind: dimension
+    query: |
+      SELECT CAST(employee_id AS VARCHAR) AS source_employee_id,
+             first_name, last_name, title,
+             'customer_support_rep' AS employee_role FROM employee
+    natural_key: [source_employee_id]
+    key_column: employee_key
+    required: [source_employee_id, first_name, last_name]
+  - name: dim_products
+    kind: dimension
+    query: |
+      SELECT CAST(t.track_id AS VARCHAR) AS source_product_id,
+             t.name AS product_name, 'Digital Media' AS product_domain,
+             g.name AS category_name
+      FROM track t JOIN genre g ON t.genre_id = g.genre_id
+    natural_key: [source_product_id]
+    key_column: product_key
+    required: [source_product_id, product_name, product_domain, category_name]
+  - name: fact_sales_line
+    kind: fact
+    query: |
+      SELECT CAST(strftime(CAST(i.invoice_date AS DATE), '%Y%m%d') AS BIGINT) AS date_key,
+             CAST(i.customer_id AS VARCHAR) AS source_customer_id,
+             CAST(c.support_rep_id AS VARCHAR) AS source_employee_id,
+             CAST(l.track_id AS VARCHAR) AS source_product_id,
+             1 AS source_system_id,
+             CAST(i.invoice_id AS VARCHAR) AS source_order_id,
+             CAST(l.invoice_line_id AS VARCHAR) AS source_line_id,
+             CAST(l.unit_price AS DOUBLE) AS unit_price,
+             CAST(l.quantity AS BIGINT) AS quantity,
+             0.0 AS discount_rate,
+             CAST(l.unit_price * l.quantity AS DOUBLE) AS sales_amount
+      FROM invoice_line l JOIN invoice i ON l.invoice_id = i.invoice_id
+      JOIN customer c ON i.customer_id = c.customer_id
+    natural_key: [source_line_id]
+    key_column: sales_key
+    date_column: date_key
+    required: [date_key, customer_key, employee_key, product_key, source_system_key, source_line_id, unit_price, quantity, discount_rate, sales_amount]
+    foreign_keys:
+      customer_key: {dimension: dim_customers, fact_columns: [source_customer_id], dimension_columns: [source_customer_id]}
+      employee_key: {dimension: dim_employees, fact_columns: [source_employee_id], dimension_columns: [source_employee_id]}
+      product_key: {dimension: dim_products, fact_columns: [source_product_id], dimension_columns: [source_product_id]}
+      source_system_key: {dimension: dim_source_system, fact_columns: [source_system_id], dimension_columns: [source_system_id]}
+      date_key: {dimension: dim_date, fact_columns: [date_key], dimension_columns: [date_key]}

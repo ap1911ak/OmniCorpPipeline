@@ -1,0 +1,71 @@
+// Approved conformed star schema; dimensions contain two or more hierarchy levels.
+Table dim_date {
+  date_key bigint [pk]
+  full_date date
+  day_of_month int
+  day_of_week varchar
+  month int
+  month_name varchar
+  quarter int
+  year int
+}
+
+Table dim_source_system {
+  source_system_key bigint [pk]
+  source_system_id int
+  source_system_name varchar
+  description varchar
+}
+
+Table dim_customers {
+  customer_key bigint [pk]
+  source_customer_id varchar
+  customer_name varchar
+  customer_type varchar
+  city varchar
+  country varchar
+}
+
+Table dim_employees {
+  employee_key bigint [pk]
+  source_employee_id varchar
+  first_name varchar
+  last_name varchar
+  title varchar
+  employee_role varchar
+}
+
+Table dim_products {
+  product_key bigint [pk]
+  source_product_id varchar
+  product_name varchar
+  product_domain varchar
+  category_name varchar
+}
+
+Table fact_sales_line {
+  sales_key bigint [pk]
+  date_key bigint
+  customer_key bigint
+  employee_key bigint
+  product_key bigint
+  source_system_key bigint
+  source_customer_id varchar
+  source_employee_id varchar
+  source_product_id varchar
+  source_system_id int
+  source_order_id varchar
+  source_line_id varchar
+  unit_price decimal(18,4)
+  quantity bigint
+  discount_rate decimal(18,4)
+  sales_amount decimal(18,4)
+}
+
+Ref: fact_sales_line.date_key > dim_date.date_key
+Ref: fact_sales_line.customer_key > dim_customers.customer_key
+Ref: fact_sales_line.employee_key > dim_employees.employee_key
+Ref: fact_sales_line.product_key > dim_products.product_key
+Ref: fact_sales_line.source_system_key > dim_source_system.source_system_key
+
+// Hierarchies: year > quarter > month > day; product_domain > category_name > product_name.

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipeline-framework"
+version = "0.1.0"
+description = "Configurable six-zone batch data pipeline"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas>=2.2,<3", "pyarrow>=17", "duckdb>=1.1", "PyYAML>=6",
+  "SQLAlchemy>=2", "requests>=2.32", "beautifulsoup4>=4.12",
+  "altair>=5",
+]
+
+[project.optional-dependencies]
+excel = ["openpyxl>=3.1", "xlrd>=2.0"]
+cloud = ["fsspec>=2024.6", "s3fs>=2024.6", "gcsfs>=2024.6", "adlfs>=2024.6"]
+postgresql = ["psycopg2-binary>=2.9"]
+clickhouse = ["clickhouse-connect>=0.8"]
+sqlserver = ["pyodbc>=5"]
+test = ["pytest>=8", "openpyxl>=3.1"]
+
+[project.scripts]
+pipeline-framework = "pipeline_framework.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

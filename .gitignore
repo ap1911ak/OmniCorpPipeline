@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+data/*
+!data/raw/
+data/raw/*
+!data/raw/*.db
+reports/
+manifests/
+warehouse/
