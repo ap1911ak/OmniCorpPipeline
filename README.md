@@ -1,5 +1,7 @@
 # Pipeline Framework
 
+เอกสารแยกตาม stage อยู่ที่ [`docs/README.md`](docs/README.md)
+
 Python batch framework implementing `Ingress > EDA/Design > Landing > Staging > Integration > Load`.
 
 ## Quick start
